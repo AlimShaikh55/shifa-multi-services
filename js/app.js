@@ -15,8 +15,10 @@
   const VENDOR = ['vendor/html2canvas.min.js', 'vendor/jspdf.umd.min.js'];
 
   // ---------- state ----------
-  const S = { c_gender: 'm', p_relation: '0', p_season: 'k', rows: [], gats: [], photo: null, mDigits: false };
+  const S = { c_prefix: 'श्री', c_gender: 'm', p_relation: '0', p_season: 'k', rows: [], gats: [], photo: null, mDigits: false };
   const newGat = () => ({ gat: '', area: '', north: '', south: '', east: '', west: '' });
+  const DEFAULT_CROP = 'कापूस';
+  const newRow = (o = {}) => Object.assign({ gav: '', autoGav: true, gat: '', autoGat: true, crop: DEFAULT_CROP, other: '', area: '', autoArea: true, remark: '' }, o);
 
   // ---------- helpers ----------
   const $ = s => document.querySelector(s);
@@ -31,6 +33,17 @@
     kids.forEach(k => e.append(k));
     return e;
   };
+  // Marathi digits (०-९) -> English (0-9). Rewrites the input in place and keeps the caret where it was.
+  const toEn = v => String(v).replace(/[०-९]/g, d => MD.indexOf(d));
+  function enInput(inp) {
+    const v = toEn(inp.value);
+    if (v !== inp.value) {
+      const pos = inp.selectionStart;
+      inp.value = v;
+      try { inp.setSelectionRange(pos, pos); } catch (e) { /* some input types don't support it */ }
+    }
+    return v;
+  }
   const gatNums = () => S.gats.map(g => g.gat.trim()).filter(Boolean);
   const cropName = r => r.crop === '__other' ? r.other : r.crop;
 
@@ -43,12 +56,13 @@
   $('[data-k="c_date"]').value = iso;
   $('[data-k="p_year"]').value = S.p_year;
   S.gats = [newGat()];
-  S.rows = [{ gav: '', autoGav: true, gat: '', autoGat: true, crop: '', other: '', area: '', remark: '' }];
+  S.rows = [newRow()];
 
   // ---------- fill a page from state ----------
   function val(k, g) {
     if (k.startsWith('g_')) return dig(g ? (g[k.slice(2)] || '') : '');
     if (k === 'gatList') return dig(gatNums().join(', '));
+    if (k === 'c_fullName') { const n = (S.c_name || '').trim(); return n ? `${S.c_prefix} ${n}` : ''; }
     let v = S[k] || '';
     if (k.endsWith('_date')) v = fmtDate(v);
     return dig(v);
@@ -131,7 +145,13 @@
       const inp = (key, label, ph = '', cls = '') => {
         const x = el('input', { value: g[key], placeholder: ph });
         if (key === 'gat') x.inputMode = 'text';
-        x.addEventListener('input', () => { g[key] = x.value; if (key === 'gat') syncGat(); render(); });
+        const numeric = key === 'gat' || key === 'area';
+        if (key === 'area') x.inputMode = 'decimal';
+        x.addEventListener('input', () => {
+          g[key] = numeric ? enInput(x) : x.value;
+          if (numeric) syncGat();
+          render();
+        });
         return el('label', { className: cls }, [label, x]);
       };
       const del = el('button', { type: 'button', className: 'icon-btn', textContent: '×', disabled: S.gats.length === 1 });
@@ -174,7 +194,7 @@
       if (!other.hidden) other.focus();
       render();
     });
-    other.addEventListener('input', () => { r[key] = other.value; if (onChange) onChange(); render(); });
+    other.addEventListener('input', () => { r[key] = key === 'gat' ? enInput(other) : other.value; if (onChange) onChange(); render(); });
     return el('label', {}, [label, sel, other]);
   }
 
@@ -185,11 +205,22 @@
     S.rows.forEach((r, i) => {
       const txt = (key, label, ph = '') => {
         const x = el('input', { value: r[key], placeholder: ph });
-        x.addEventListener('input', () => { r[key] = x.value; render(); });
+        if (key === 'area') {
+          x.inputMode = 'decimal';
+          r._areaInput = x; // lets syncArea() update the box without rebuilding the row
+          x.addEventListener('input', () => {
+            r.area = enInput(x);
+            r.autoArea = !r.area.trim(); // cleared -> follows the gat's area again
+            if (r.autoArea) syncArea();
+            render();
+          });
+        } else {
+          x.addEventListener('input', () => { r[key] = x.value; render(); });
+        }
         return el('label', {}, [label, x]);
       };
       const gavL = pickField(r, 'gav', 'गाव', VILLAGES, 'गावाचे नाव लिहा', () => { r.autoGav = !r.gav; });
-      const gatL = pickField(r, 'gat', 'गट नं. (अ.क्र.)', nums, 'गट नंबर लिहा', () => { r.autoGat = !r.gat; });
+      const gatL = pickField(r, 'gat', 'गट नं. (अ.क्र.)', nums, 'गट नंबर लिहा', () => { r.autoGat = !r.gat; syncArea(); });
 
       const sel = el('select');
       sel.append(el('option', { value: '', textContent: '— निवडा —' }));
@@ -203,7 +234,7 @@
 
       const del = el('button', { type: 'button', className: 'icon-btn', textContent: '×', disabled: S.rows.length === 1 });
       del.setAttribute('aria-label', `ओळ ${i + 1} काढा`);
-      del.addEventListener('click', () => { S.rows.splice(i, 1); drawRows(); render(); });
+      del.addEventListener('click', () => { S.rows.splice(i, 1); syncArea(); drawRows(); render(); });
       const head = el('div', { className: 'gat-head' }, [el('b', { textContent: `ओळ ${i + 1}` }), del]);
 
       frag.append(el('div', { className: 'gat-card' }, [head, el('div', { className: 'grid' }, [
@@ -219,8 +250,8 @@
     const used = S.rows.map(r => r.gat);
     const nums = gatNums();
     const next = nums.find(x => !used.includes(x)) || nums[0] || '';
-    S.rows.push({ gav: S.c_landVillage || '', autoGav: true, gat: next, autoGat: false, crop: '', other: '', area: '', remark: '' });
-    drawRows(); render();
+    S.rows.push(newRow({ gav: S.c_landVillage || '', gat: next, autoGat: false }));
+    syncArea(); drawRows(); render();
   });
 
   // ---------- auto-fill row village and gat ----------
@@ -239,14 +270,29 @@
   function syncGat() {
     const nums = gatNums();
     S.rows.forEach((r, i) => { if (r.autoGat) r.gat = nums[i] || ''; });
+    syncArea();
     clearTimeout(gatTimer);
     gatTimer = setTimeout(drawRows, 250);
+  }
+
+  // Row क्षेत्र follows the matching gat's क्षेत्र (same gat number, else the gat in the same position)
+  // until the operator types their own value in the row.
+  function syncArea() {
+    S.rows.forEach((r, i) => {
+      if (r.autoArea === false) return;
+      const no = (r.gat || '').trim();
+      const g = no ? S.gats.find(x => x.gat.trim() === no) : S.gats[i];
+      if (!g) return;
+      r.area = g.area;
+      const inp = r._areaInput;
+      if (inp && inp.isConnected && document.activeElement !== inp && inp.value !== r.area) inp.value = r.area;
+    });
   }
 
   // ---------- simple inputs ----------
   $$('[data-k]').forEach(inp => {
     inp.addEventListener('input', () => {
-      let v = inp.value;
+      let v = inp.hasAttribute('data-num') || inp.hasAttribute('data-aadhaar') ? enInput(inp) : inp.value;
       if (inp.hasAttribute('data-aadhaar')) {
         v = v.replace(/\D/g, '').slice(0, 12).replace(/(\d{4})(?=\d)/g, '$1 ');
         inp.value = v;
@@ -255,7 +301,16 @@
       sync(); render();
     });
   });
-  $$('input[type=radio]').forEach(r => r.addEventListener('change', () => { S[r.name] = r.value; render(); }));
+  $$('input[type=radio]').forEach(r => r.addEventListener('change', () => {
+    S[r.name] = r.value;
+    if (r.name === 'c_prefix') {
+      // श्री -> करतो (पुरुष), श्रीमती -> करते (स्त्री); can still be changed by hand afterwards
+      S.c_gender = r.value === 'श्रीमती' ? 'f' : 'm';
+      const g = $(`input[name="c_gender"][value="${S.c_gender}"]`);
+      if (g) g.checked = true;
+    }
+    render();
+  }));
   $('#mDigits').addEventListener('change', e => { S.mDigits = e.target.checked; render(); });
 
   $$('[data-sel]').forEach(sel => {
