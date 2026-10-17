@@ -34,6 +34,12 @@
     <fieldset>
       <legend>अर्जदाराची माहिती</legend>
       <div class="grid">
+        <label class="full">उपसर्ग
+          <div class="seg">
+            <label><input type="radio" name="c_prefix" value="श्री" checked>श्री</label>
+            <label><input type="radio" name="c_prefix" value="श्रीमती">श्रीमती</label>
+          </div>
+        </label>
         <label class="full">अर्जदाराचे पूर्ण नाव<input data-k="c_name" autocomplete="off"></label>
         <label class="full">वडिलांचे / पतीचे नाव (श्री)<input data-k="p_relName"></label>
         <label class="full">नाते
@@ -43,7 +49,7 @@
             <label><input type="radio" name="p_relation" value="2">पत्नी</label>
           </div>
         </label>
-        <label>वय<input data-k="p_age" inputmode="numeric" maxlength="3"></label>
+        <label>वय<input data-k="p_age" inputmode="numeric" maxlength="3" data-num></label>
         <label>व्यवसाय<input data-k="p_occupation" value="शेती"></label>
         <label class="full">आधार नंबर<input data-k="c_aadhaar" inputmode="numeric" maxlength="14" data-aadhaar></label>
         <label class="full">राहण्याचे गाव (मौजे)<select data-sel="c_resVillage"><option value="" selected>— निवडा —</option><option value="पिंपळनेर">पिंपळनेर</option><option value="ताडसोन्ना">ताडसोन्ना</option><option value="वलीपूर">वलीपूर</option><option value="मन्यारवाडी">मन्यारवाडी</option><option value="बेलवाडी">बेलवाडी</option><option value="पटेगाव">पटेगाव</option><option value="बोरदेवी">बोरदेवी</option><option value="सुर्डी (थोट)">सुर्डी (थोट)</option><option value="__other">इतर</option></select><input data-other="c_resVillage" placeholder="गावाचे नाव लिहा" hidden></label>
@@ -67,7 +73,7 @@
     <fieldset>
       <legend>पिक पेरणी तपशील</legend>
       <div class="grid" style="margin-bottom:12px">
-        <label>सन 20__<input data-k="p_year" inputmode="numeric" maxlength="2"></label>
+        <label>सन 20__<input data-k="p_year" inputmode="numeric" maxlength="2" data-num></label>
         <label>हंगाम
           <div class="seg">
             <label><input type="radio" name="p_season" value="k" checked>खरीप</label>
@@ -110,7 +116,7 @@
         <div class="ref" data-v="c_ref"></div>
         <h2>चतु:सिमा (नकाशा) बाबत स्वयंघोषणापत्र</h2>
         <div class="gr">(शासन निर्णय क्रमांक:प्रसुधा <span class="dvd">१६१४</span>/<span class="dvd">३४५</span>/प्र.क्र.<span class="dvd">७१</span>/<span class="dvd">१८</span> अ)</div>
-        <div class="row"><span style="margin-left:200px">मी&nbsp;</span><span class="f grow" data-v="c_name"></span></div>
+        <div class="row"><span style="margin-left:200px">मी&nbsp;</span><span class="f grow" data-v="c_fullName"></span></div>
         <div class="row"><span>आधार नंबर</span><span class="f grow" data-v="c_aadhaar"></span><span>मौजे</span><span class="f grow" data-v="c_resVillage"></span></div>
         <div class="row"><span>ता.</span><span class="f grow" data-v="c_taluka"></span><span>जि.</span><span class="f grow" data-v="c_district"></span><span>येथिल रहीवासी असुन माझ्या</span></div>
         <div class="row"><span>नावाने मौजे&nbsp;</span><span class="f grow" data-v="c_landVillage"></span><span>येथे गट नंबर</span><span class="f" style="min-width:64px" data-v="g_gat"></span><span>क्षेत्र</span><span class="f" style="min-width:110px" data-v="g_area"></span><span>हे.आर</span></div>
@@ -138,7 +144,7 @@
         <div class="topline"></div>
         <div class="gr">शासन निर्णय क्रमांक :- आरटीएस 2015-2015/प्र.क्र.32/प.रा.-5 दि.</div>
         <h2>पिक पेरणी बाबत स्वयं घोषणापत्र</h2>
-        <div class="row"><span>मी खालील सही करणार&nbsp;</span><span class="f grow" data-v="c_name"></span><span>&nbsp;रा.&nbsp;</span><span class="f" style="min-width:150px" data-v="c_resVillage"></span><span>&nbsp;माझी</span></div>
+        <div class="row"><span>मी खालील सही करणार&nbsp;</span><span class="f grow" data-v="c_fullName"></span><span>&nbsp;रा.&nbsp;</span><span class="f" style="min-width:150px" data-v="c_resVillage"></span><span>&nbsp;माझी</span></div>
         <div class="row r2"><span>मौजे&nbsp;</span><span class="f" style="min-width:150px" data-v="c_landVillage"></span><span>&nbsp;या शिवारामध्ये शेती असून गट नं.&nbsp;</span><span class="f grow" style="min-width:64px;white-space:normal" data-v="gatList"></span><span>&nbsp;मध्ये मी</span></div>
         <div class="row r3"><span>सन 20</span><span class="f" style="min-width:34px;padding:0 2px;border-bottom:none" data-v="p_year"></span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span data-opt="p_season:k">खरीप</span>/<span data-opt="p_season:r">रब्बी</span> हंगामामध्ये खालील प्रमाणे पिक पेरणी केलेली आहे.</span></div>
         <table>
@@ -151,7 +157,7 @@
           <div class="photo" id="photoBox">पासपोर्ट<br>आकाराचा<br>फोटो</div>
         </div>
         <div class="decl">
-          <span class="lead">मी&nbsp;</span><span class="f" style="min-width:230px" data-v="c_name"></span> श्री <span class="f" style="min-width:190px" data-v="p_relName"></span>
+          <span class="lead">मी&nbsp;</span><span class="f" style="min-width:230px" data-v="c_fullName"></span> श्री <span class="f" style="min-width:190px" data-v="p_relName"></span>
           यांचा <span data-opt="p_relation:0">मुलगा</span> / <span data-opt="p_relation:1">मुलगी</span> / <span data-opt="p_relation:2">पत्नी</span> वय <span class="f" style="min-width:50px" data-v="p_age"></span> आधार कार्ड क्रमांक
           (असल्यास) <span class="f" style="min-width:170px" data-v="c_aadhaar"></span> व्यवसाय <span class="f" style="min-width:120px" data-v="p_occupation"></span>
           रा. <span class="f" style="min-width:150px" data-v="c_resVillage"></span> याद्वारे घोषित करतो की, वरील सर्व माहिती माझ्या व्यक्तिगत माहिती व समजुतीनुसार खरी आहे. सदर माहिती खोटी आढळल्यास, भारतीय दंड संहिता अन्वये आणि / किंवा संबंधित कायद्यानुसार माझ्यावर खटला भरला जाईल व त्यानुसार मी शिक्षेस पात्र राहीन. तसेच सदर स्वयंघोषणापत्राद्वारे मला मिळालेले सर्व लाभ सर्वकषरित्या काढून घेण्यात येतील याची मला पूर्ण जाणीव आहे.
@@ -160,7 +166,7 @@
           <span>ठिकाण -</span><span class="f" data-v="c_resVillage"></span>
           <span class="k">अर्जदाराची सही -</span><span class="f"></span>
           <span>दिनांक -</span><span class="f" data-v="c_date"></span>
-          <span class="k">अर्जदाराची नाव -</span><span class="f" data-v="c_name"></span>
+          <span class="k">अर्जदाराची नाव -</span><span class="f" data-v="c_fullName"></span>
         </div>
       </div>
     </div></div>
