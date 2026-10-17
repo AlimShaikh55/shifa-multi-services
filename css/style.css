@@ -183,3 +183,10 @@ input[type=file]{padding:6px;font-size:14px}
   #printArea .page:last-child{page-break-after:auto;break-after:auto}
 }
 #capture{position:fixed;left:-12000px;top:0;width:794px}
+
+/* ---------- Filled-in entries are bold on both pages ---------- */
+.page [data-v],
+.page [data-v] .dvd,
+.pp .decl .f,
+.pp .sigs .f,
+.pp td{font-weight:700}
